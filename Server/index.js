@@ -1,15 +1,21 @@
-const express = require("express");
-const fs = require("fs");
-const os = require("os");
+import express from "express";
+import dotenv from "dotenv";
+import connectDB from "./config/db.js";
+import authRoutes from "./routes/authRoutes.js";
 
-const { appendFile } = fs;
+dotenv.config();
+
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 5000;
+app.use(express.json());
+// Connect to MongoDB
+connectDB();
+
+app.use("/api", authRoutes);
 
 app.get("/", (req, res) => {
-  res.send(`<h1>Welcome back!</h1>`);
+  res.send("<h1>Welcome back!</h1>");
 });
-
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
