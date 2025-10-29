@@ -1,5 +1,3 @@
-
-// export default MessageList;
 import React, { useEffect, useRef } from "react";
 import Message from "./Message";
 

@@ -1,4 +1,3 @@
-// export default MessageInput;
 import React from "react";
 import { HiOutlinePlus, HiOutlineFaceSmile } from "react-icons/hi2";
 import { FiMic } from "react-icons/fi";

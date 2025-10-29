@@ -1,49 +1,76 @@
 import React, { useState, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation, Navigate } from "react-router-dom"; // Added useLocation & Navigate
+import axios from "axios"; // Added axios
 import { FiArrowLeft } from "react-icons/fi";
 
 const OtpPage = ({ onVerify }) => {
-  // The new design has 4 input fields instead of 6
   const [otp, setOtp] = useState(new Array(4).fill(""));
+  const [loading, setLoading] = useState(false); // Added loading state
+  const [error, setError] = useState(""); // Added error state
+
   const navigate = useNavigate();
+  const location = useLocation(); // Hook to get router state
   const inputRefs = useRef([]);
 
+  // --- THE UPDATE IS HERE ---
+  // Get the email that was passed from the SignupPage
+  const email = location.state?.email;
+
+  // If the user navigates here directly without an email, redirect them
+  if (!email) {
+    return <Navigate to="/register" />;
+  }
+  // --- END OF UPDATE ---
+
   const handleChange = (element, index) => {
-    // Regex to allow only digits
     if (!/^[0-9]$/.test(element.value)) {
-      // If the value is not a digit, clear it (except for backspace)
       element.value = "";
       return;
     }
-
-    // Update OTP state
     const newOtp = [...otp];
     newOtp[index] = element.value;
     setOtp(newOtp);
-
-    // Focus next input
     if (element.nextSibling && element.value) {
       element.nextSibling.focus();
     }
   };
 
   const handleKeyDown = (e, index) => {
-    // Move focus to previous input on backspace if current is empty
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1].focus();
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
+    // <-- Changed to async
     e.preventDefault();
     const enteredOtp = otp.join("");
-    // Check if the OTP has 4 digits
-    if (enteredOtp.length === 4) {
-      console.log("Verifying OTP:", enteredOtp);
+    if (enteredOtp.length !== 4) {
+      setError("Please enter the complete 4-digit OTP.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      // --- THE UPDATE IS HERE ---
+      // Call the new backend verification endpoint
+      const response = await axios.post(
+        "http://localhost:3000/api/auth/verify-otp",
+        { email, otp: enteredOtp },
+        { withCredentials: true }
+      );
+
+      console.log("Verification successful:", response.data);
+      setLoading(false);
       onVerify(); // Call the login function from App.jsx
       navigate("/"); // Redirect to the main chat app
-    } else {
-      alert("Please enter the complete 4-digit OTP.");
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message || "Verification failed.";
+      setError(errorMessage);
+      setLoading(false);
     }
   };
 
@@ -58,13 +85,21 @@ const OtpPage = ({ onVerify }) => {
           <h1 className="text-3xl font-bold text-gray-900">
             Verify Email Address
           </h1>
+          {/* Display the email for user confirmation */}
           <p className="mt-2 text-gray-600">
-            We've sent an OTP to your email address. Please enter the OTP to
-            verify your account.
+            We've sent an OTP to <span className="font-semibold">{email}</span>.
+            Please enter it to verify your account.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Display error messages from the API */}
+          {error && (
+            <div className="p-3 text-center bg-red-100 border border-red-400 text-red-700 rounded-md text-sm">
+              {error}
+            </div>
+          )}
+
           <div>
             <label className="text-sm font-medium text-gray-700">
               Enter OTP
@@ -73,7 +108,7 @@ const OtpPage = ({ onVerify }) => {
               {otp.map((data, index) => (
                 <input
                   key={index}
-                  type="tel" // Use 'tel' for numeric keyboard on mobile
+                  type="tel"
                   maxLength="1"
                   value={data}
                   ref={(el) => (inputRefs.current[index] = el)}
@@ -99,9 +134,10 @@ const OtpPage = ({ onVerify }) => {
           <div>
             <button
               type="submit"
-              className="w-full bg-teal-500 text-white font-bold py-3 px-4 rounded-xl text-lg hover:bg-teal-600 transition-colors duration-300"
+              disabled={loading} // Disable button while loading
+              className="w-full bg-teal-500 text-white font-bold py-3 px-4 rounded-xl text-lg hover:bg-teal-600 transition-colors duration-300 disabled:bg-teal-300"
             >
-              Verify
+              {loading ? "Verifying..." : "Verify"}
             </button>
           </div>
         </form>
