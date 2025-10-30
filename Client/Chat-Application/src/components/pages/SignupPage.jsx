@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import AuthForm from "../auth/AuthForm"; // Corrected path to match your structure
+import AuthForm from "../auth/AuthForm.jsx";
 import { FiUser, FiMail, FiLock } from "react-icons/fi";
 
 const SignupPage = () => {
@@ -30,7 +30,7 @@ const SignupPage = () => {
     }
 
     try {
-      // Ensure the URL points to your backend server on port 5000
+      // --- THE FIX IS HERE: Correct the backend URL ---
       const response = await axios.post(
         "http://localhost:3000/api/auth/register",
         formData
@@ -38,10 +38,7 @@ const SignupPage = () => {
 
       console.log("Registration successful:", response.data);
       setLoading(false);
-
-      // --- THE UPDATE IS HERE ---
-      // Pass the email to the OTP page via router state.
-      // This is crucial for the OTP page to know which user to verify.
+      
       navigate("/verify-otp", { state: { email: formData.email } });
     } catch (err) {
       const errorMessage =

@@ -1,26 +1,24 @@
 import React, { useState, useRef } from "react";
-import { useNavigate, Link, useLocation, Navigate } from "react-router-dom"; // Added useLocation & Navigate
-import axios from "axios"; // Added axios
+import { useNavigate, Link, useLocation, Navigate } from "react-router-dom";
+import axios from "axios";
+import { useAuth } from "../context/AuthContext.jsx"; // Import the useAuth hook
 import { FiArrowLeft } from "react-icons/fi";
 
-const OtpPage = ({ onVerify }) => {
+const OtpPage = () => {
+  const { login } = useAuth(); // Get the global login function from context
   const [otp, setOtp] = useState(new Array(4).fill(""));
-  const [loading, setLoading] = useState(false); // Added loading state
-  const [error, setError] = useState(""); // Added error state
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
-  const location = useLocation(); // Hook to get router state
+  const location = useLocation();
   const inputRefs = useRef([]);
 
-  // --- THE UPDATE IS HERE ---
-  // Get the email that was passed from the SignupPage
   const email = location.state?.email;
 
-  // If the user navigates here directly without an email, redirect them
   if (!email) {
     return <Navigate to="/register" />;
   }
-  // --- END OF UPDATE ---
 
   const handleChange = (element, index) => {
     if (!/^[0-9]$/.test(element.value)) {
@@ -42,7 +40,6 @@ const OtpPage = ({ onVerify }) => {
   };
 
   const handleSubmit = async (e) => {
-    // <-- Changed to async
     e.preventDefault();
     const enteredOtp = otp.join("");
     if (enteredOtp.length !== 4) {
@@ -54,18 +51,23 @@ const OtpPage = ({ onVerify }) => {
     setError("");
 
     try {
-      // --- THE UPDATE IS HERE ---
-      // Call the new backend verification endpoint
-      const response = await axios.post(
+      const { data } = await axios.post(
         "http://localhost:3000/api/auth/verify-otp",
         { email, otp: enteredOtp },
         { withCredentials: true }
       );
 
-      console.log("Verification successful:", response.data);
-      setLoading(false);
-      onVerify(); // Call the login function from App.jsx
-      navigate("/"); // Redirect to the main chat app
+      console.log("Verification successful:", data);
+
+      // Call the context's login function to save the new user's data globally
+      login(data);
+
+      // Redirect based on the backend's response
+      if (data.profileComplete) {
+        navigate("/");
+      } else {
+        navigate("/complete-profile");
+      }
     } catch (err) {
       const errorMessage =
         err.response?.data?.message || "Verification failed.";
@@ -85,7 +87,6 @@ const OtpPage = ({ onVerify }) => {
           <h1 className="text-3xl font-bold text-gray-900">
             Verify Email Address
           </h1>
-          {/* Display the email for user confirmation */}
           <p className="mt-2 text-gray-600">
             We've sent an OTP to <span className="font-semibold">{email}</span>.
             Please enter it to verify your account.
@@ -93,7 +94,6 @@ const OtpPage = ({ onVerify }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Display error messages from the API */}
           {error && (
             <div className="p-3 text-center bg-red-100 border border-red-400 text-red-700 rounded-md text-sm">
               {error}
@@ -134,7 +134,7 @@ const OtpPage = ({ onVerify }) => {
           <div>
             <button
               type="submit"
-              disabled={loading} // Disable button while loading
+              disabled={loading}
               className="w-full bg-teal-500 text-white font-bold py-3 px-4 rounded-xl text-lg hover:bg-teal-600 transition-colors duration-300 disabled:bg-teal-300"
             >
               {loading ? "Verifying..." : "Verify"}
@@ -147,8 +147,7 @@ const OtpPage = ({ onVerify }) => {
             to="/login"
             className="inline-flex items-center gap-2 font-medium text-gray-600 hover:text-teal-600"
           >
-            <FiArrowLeft />
-            Back to Login
+            <FiArrowLeft /> Back to Login
           </Link>
         </div>
       </div>

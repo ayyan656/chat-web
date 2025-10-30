@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import AuthForm from "../auth/AuthForm"; // Corrected path
+// --- THE FIX IS HERE: Correct the import path for the context ---
+import { useAuth } from "../context/AuthContext.jsx";
+import AuthForm from "../auth/AuthForm.jsx";
 import { FiMail, FiLock } from "react-icons/fi";
 
-const LoginPage = ({ onLogin }) => {
+const LoginPage = () => {
+  const { login } = useAuth();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -20,19 +23,23 @@ const LoginPage = ({ onLogin }) => {
     setError("");
 
     try {
-      // --- THE FIX IS HERE ---
-      // The URL MUST point to your backend server on port 5000
-      const response = await axios.post(
+      // --- THE FIX IS HERE: Correct the backend URL ---
+      const { data } = await axios.post(
         "http://localhost:3000/api/auth/login",
         formData,
         { withCredentials: true }
       );
 
-      console.log("Login successful:", response.data);
-      setLoading(false);
+      console.log("Login successful:", data);
+      
+      login(data);
 
-      onLogin();
-      navigate("/");
+      if (data.profileComplete) {
+        navigate('/');
+      } else {
+        navigate('/complete-profile');
+      }
+
     } catch (err) {
       const errorMessage =
         err.response?.data?.message || "Login failed. Please try again.";

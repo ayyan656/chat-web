@@ -5,6 +5,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/db.js"; // <-- Note the .js extension
 import authRoutes from "./routes/authRoutes.js"; // <-- Note the .js extension
+import cookieParser from "cookie-parser"; // <-- Import cookie-parser
+import profileRoutes from "./routes/profileRoutes.js"; // <-- Import profile routes
 
 // --- Configurations ---
 dotenv.config();
@@ -25,13 +27,14 @@ const io = new Server(server, {
 // --- Middleware ---
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser()); // <-- Use cookie-parser
 
 // --- API Routes ---
 app.get("/", (req, res) => {
   res.send("API is running successfully...");
 });
 app.use("/api/auth", authRoutes);
-
+app.use("/api/profile", profileRoutes);
 // --- Socket.IO Connection Logic ---
 io.on("connection", (socket) => {
   console.log("A user connected with socket ID:", socket.id);
