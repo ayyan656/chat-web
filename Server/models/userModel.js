@@ -27,13 +27,16 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 };
 
 userSchema.pre("save", async function (next) {
+  // Only hash the password if it has been modified (or is new)
   if (!this.isModified("password_hash")) {
     return next();
   }
+  // Hash the password
   const salt = await bcrypt.genSalt(10);
   this.password_hash = await bcrypt.hash(this.password_hash, salt);
 });
 
-const User = mongoose.model("User", userSchema);
 
+// Create and export the User model
+const User = mongoose.model("User", userSchema);
 export default User;

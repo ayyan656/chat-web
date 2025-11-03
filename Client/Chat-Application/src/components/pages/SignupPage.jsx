@@ -30,7 +30,6 @@ const SignupPage = () => {
     }
 
     try {
-      // --- THE FIX IS HERE: Correct the backend URL ---
       const response = await axios.post(
         "http://localhost:3000/api/auth/register",
         formData

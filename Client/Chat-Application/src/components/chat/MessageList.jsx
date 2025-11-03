@@ -1,26 +1,29 @@
 import React, { useEffect, useRef } from "react";
 import Message from "./Message";
 
-// Accept a new prop: onAreaClick
-const MessageList = ({ messages, senderAvatar, onAreaClick }) => {
-  const endOfMessagesRef = useRef(null);
+// This is now a "dumb" component. It does not control its own layout.
+const MessageList = ({ messages, currentUserId, onAreaClick }) => {
+  const endRef = useRef(null);
 
+  // This effect ensures the view scrolls down when new messages are added
   useEffect(() => {
-    endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (endRef.current) {
+      endRef.current.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
 
   return (
-    // Add the onClick event to the main container
-    <div className="flex-1 p-6 overflow-y-auto" onClick={onAreaClick}>
+    // The onClick is now on the parent div
+    <div onClick={onAreaClick} className="p-4 md:p-6">
       {messages.map((msg) => (
         <Message
-          key={msg.id}
+          key={msg._id}
           message={msg}
-          sender={msg.sender}
-          avatar={senderAvatar}
+          isOutgoing={msg.sender._id === currentUserId}
         />
       ))}
-      <div ref={endOfMessagesRef} />
+      {/* This invisible div is what we scroll to */}
+      <div ref={endRef} />
     </div>
   );
 };

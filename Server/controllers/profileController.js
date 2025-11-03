@@ -1,24 +1,22 @@
 import Profile from "../models/profileModel.js";
 
-// @desc    Get or create/update user profile
-// @route   PUT /api/profile
-// @access  Private
 const upsertProfile = async (req, res) => {
   const { displayName, about, profilePictureUrl } = req.body;
 
+  // Validate input
   if (!displayName) {
     return res.status(400).json({ message: "Display name is required" });
   }
 
   try {
+    // Prepare profile fields
     const profileFields = {
-      user: req.user._id, // Get user ID from the 'protect' middleware
+      user: req.user._id, 
       displayName,
       about: about || "",
       profilePictureUrl: profilePictureUrl || "",
     };
-
-    // Find a profile by the user ID and update it, or create it if it doesn't exist.
+    // Upsert profile document 
     const profile = await Profile.findOneAndUpdate(
       { user: req.user._id },
       { $set: profileFields },

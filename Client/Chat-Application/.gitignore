@@ -1,3 +1,7 @@
+#.gitignore for Chat Application
+.env
+
+
 # Logs
 logs
 *.log

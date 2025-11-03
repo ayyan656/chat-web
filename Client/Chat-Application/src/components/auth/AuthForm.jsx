@@ -29,7 +29,7 @@ const AuthForm = ({
             </div>
           )}
 
-          <div className="rounded-md shadow-sm -space-y-px flex flex-col gap-y-4">
+          <div className="rounded-md -space-y-px flex flex-col gap-y-4">
             {config.fields.map((field) => (
               <FormInput
                 key={field.id}

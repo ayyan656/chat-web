@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
+// Load environment variables from .env file
 dotenv.config();
 
+// Function to connect to MongoDB
 const connectDB = async () => {
   try {
     const dbURI = process.env.MONGO_URI;
@@ -16,6 +18,15 @@ const connectDB = async () => {
     console.error("❌ MongoDB connection error:", error.message);
     process.exit(1);
   }
+
+  // Event listeners for MongoDB connection
+  mongoose.connection.on("connected", () => {
+    console.log("✅ MongoDB connected.");
+  });
+
+  mongoose.connection.on("error", (err) => {
+    console.error("❌ MongoDB connection error:", err);
+  });
 
   mongoose.connection.on("disconnected", () => {
     console.log("⚠️ MongoDB disconnected.");

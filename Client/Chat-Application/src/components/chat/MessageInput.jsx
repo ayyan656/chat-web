@@ -14,26 +14,15 @@ const MessageInput = ({
   setAttachmentMenuOpen,
   onSendMessage,
 }) => {
-  const handleEmojiClick = (emojiObject) => {
-    setText((prevText) => prevText + emojiObject.emoji);
-  };
-
-  const handlePlusClick = () => {
-    setAttachmentMenuOpen((prevState) => !prevState);
-    setShowEmojiPicker(false);
+  const handleEmojiClick = (emoji) => {
+    setText((prev) => prev + emoji.emoji);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (text.trim()) {
-      onSendMessage(text);
-      setText("");
-      setShowEmojiPicker(false);
-      setAttachmentMenuOpen(false);
-    }
-  };
-
-  const handleFocus = () => {
+    if (!text.trim()) return;
+    onSendMessage(text);
+    setText("");
     setShowEmojiPicker(false);
     setAttachmentMenuOpen(false);
   };
@@ -43,11 +32,11 @@ const MessageInput = ({
       <AttachmentMenu isOpen={isAttachmentMenuOpen} />
 
       {showEmojiPicker && (
-        <div className="absolute bottom-[70px]">
+        <div className="absolute bottom-[70px] left-0">
           <EmojiPicker
             onEmojiClick={handleEmojiClick}
-            width={350} //
-            height={400} // 
+            width={320}
+            height={400}
           />
         </div>
       )}
@@ -57,7 +46,7 @@ const MessageInput = ({
           <button
             type="button"
             onClick={() => {
-              setShowEmojiPicker(!showEmojiPicker);
+              setShowEmojiPicker((v) => !v);
               setAttachmentMenuOpen(false);
             }}
             className="p-2 text-gray-500 hover:text-gray-800"
@@ -68,13 +57,15 @@ const MessageInput = ({
             type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            onFocus={handleFocus}
             placeholder="Type a message"
             className="w-full bg-transparent px-2 py-2.5 text-gray-800 placeholder:text-gray-500 focus:outline-none"
           />
           <button
             type="button"
-            onClick={handlePlusClick}
+            onClick={() => {
+              setAttachmentMenuOpen((v) => !v);
+              setShowEmojiPicker(false);
+            }}
             className="p-2 text-gray-500 hover:text-gray-800"
           >
             <HiOutlinePlus size={24} />
@@ -85,7 +76,7 @@ const MessageInput = ({
           type="submit"
           className="p-3 rounded-full bg-transparent text-teal-500 hover:bg-teal-500 hover:text-white transition-colors duration-200"
         >
-          {text ? <IoSend size={22} /> : <FiMic size={22} />}
+          {text.trim() ? <IoSend size={22} /> : <FiMic size={22} />}
         </button>
       </form>
     </div>
